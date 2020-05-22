@@ -48,7 +48,7 @@ def GetCardByName(name):
     objects = ijson.items(file, name)
     columns = list(objects)
 
-    # print(columns[0])
+    #print(columns[0])
 
     if len(columns) > 0:
         file.close()
@@ -57,17 +57,34 @@ def GetCardByName(name):
     else:
         raise Exception('No card with name %s ?' % name)
 
+
 approved = [
     "name",
     "manaCost",
     "subTypes",
     "type",
     "text",
-    "legal"
+    "legal",
+    "rulings",
+    "toughness",
+    "power"
 ]
+
+
 def getFields(fields):
     container = {}
     for key in fields:
         if key in approved:
-            container[key] = fields[key]
+            if isinstance(fields[key], list):
+                #container[key] = "\n".join(fields[key])
+                if (key == "rulings"):
+                    getRulings(fields[key])
+                    # Don't forget container
+            else:
+                container[key] = fields[key]
+
     return container
+
+def getRulings(rulings):
+    print (rulings)
+    

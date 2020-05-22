@@ -15,26 +15,18 @@ class UI(wx.Frame):
                                    wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
         # panel = wx.Panel(frame)
-        sizer = wx.GridSizer(1, 3, 0, 2)
-        leftText = StaticText(self, -1, label="Sigurd & Benjamin",
+        sizer = wx.GridSizer(1, 2, 0, 2)
+        leftText = StaticText(self, -1, label="",
                               style=wx.ALIGN_CENTRE_HORIZONTAL)
-        # moreText = wx.StaticText(self, -1, label="second item")
-        resultList = ListBox(self)
 
         # cardInfo.SetBackgroundColour('black')
         # cardInfo.SetForegroundColour('white')
 
-        sizer.Add(leftText, 1, wx.EXPAND, 0)
-        centerSection = self.CreateCenterSection()
-        sizer.Add(centerSection, 1, wx.EXPAND, 0)
-        sizer.Add(resultList, 1, wx.EXPAND, 0)
+        #sizer.Add(leftText, 1, wx.EXPAND, 0)
+        sizer.Add(self.CreateCenterSection(), 1, wx.EXPAND, 0)
+        sizer.Add(self.CreateRightSection(), 2, wx.EXPAND, 0)
+
         self.SetSizer(sizer)
-
-        # moreText.SetFont(font)
-        resultList.SetFont(self.APPFONTSMAL)
-        resultList.Bind(wx.EVT_LISTBOX, self.ResultClick)
-
-        self.resultList = resultList
 
         self.CreateStatusBar()
         self.SetStatusText("Working on adding UI search")
@@ -43,11 +35,34 @@ class UI(wx.Frame):
         sizer.SetSizeHints(self)
         sizer.Fit(self)
 
+    def CreateRightSection(self):
+        rightPanel = wx.BoxSizer(orient=wx.VERTICAL)
+        label = StaticText(
+            self, -1, label="Press on a result to show the card", style=wx.ALIGN_CENTER_HORIZONTAL)
+        label.SetBackgroundColour('white')
+        label.SetFont(self.APPFONT)
+        resultList = ListBox(self)
+
+        # moreText.SetFont(font)
+        resultList.SetFont(self.APPFONTSMAL)
+        resultList.Bind(wx.EVT_LISTBOX, self.ResultClick)
+
+        self.resultList = resultList
+
+        rightPanel.Add(label, 1, wx.EXPAND, 0)
+        rightPanel.Add(resultList, 20, wx.EXPAND, 0)
+        rightPanel.SetSizeHints(self)
+        return rightPanel
+
     def CreateCenterSection(self):
         sizer = wx.BoxSizer(orient=wx.VERTICAL)
+        top = wx.BoxSizer(orient=wx.HORIZONTAL)
+
+        submit_button = wx.Button(self, label="Search", size=wx.Size(10, 30))
+        submit_button.Bind(wx.EVT_BUTTON, self.SearchFieldInput)
 
         searchField = TextCtrl(self, size=wx.Size(250, 30))
-        searchField.Bind(wx.EVT_KEY_UP, self.SearchFieldInput)
+        #searchField.Bind(wx.EVT_KEY_UP, self.SearchFieldInput)
         searchField.SetFont(self.APPFONT)
         searchField.SetHint("Search for a card name here")
         searchField.SetFocus()
@@ -55,12 +70,19 @@ class UI(wx.Frame):
         cardInfo = StaticText(
             self, label="No card selected", size=wx.Size(250, 500))
 
+        cardInfo.SetFont(self.APPFONT)
+        cardInfo.SetBackgroundColour("white")
+
         self.cardInfo = cardInfo
         self.searchField = searchField
 
-        sizer.Add(searchField, 0, wx.EXPAND, 0)
-        sizer.Add(cardInfo, 1, wx.EXPAND, 0)
+        top.Add(searchField, 2, wx.EXPAND, 1)
+        top.Add(submit_button, 1, wx.EXPAND, 5)
+
+        sizer.Add(top, 0, wx.EXPAND, 1)
+        sizer.Add(cardInfo, 0, wx.EXPAND, 10)
         sizer.SetSizeHints(self)
+        self.centerSizer = sizer
 
         return sizer
 
@@ -71,21 +93,22 @@ class UI(wx.Frame):
             cardData = GetCardByName(cardName)
             text = concatString(cardData)
             self.cardInfo.SetLabel(text)
-            self.cardInfo.Wrap(200)
+            # self.cardInfo.Wrap(390)
+            # self.centerSizer.SetSizeHints(self)
+
 
     def SearchFieldInput(self, event):
         #print (event)
         #print (event.GetKeyCode())
         event.Skip()
-        if event.GetKeyCode() == wx.WXK_RETURN:
-            result = SearchCard(
-                self.searchField.GetLineText(0).replace("\n", ""))
-            if isinstance(result, list):
-                self.resultList.Clear()
-                self.resultList.InsertItems(result, 0)
-            else:
-                # TODO show card in a meaningfull way
-                pass
+        result = SearchCard(
+            self.searchField.GetLineText(0).replace("\n", ""))
+        if isinstance(result, list):
+            self.resultList.Clear()
+            self.resultList.InsertItems(result, 0)
+        else:
+            # TODO show card in a meaningfull way
+            pass
 
 # class MyTextCompleter(wx.TextCompleterSimple):
 #     def __init__(self, result):
